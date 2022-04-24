@@ -106,7 +106,7 @@ def load_checkpoint(model, optimizer=None, lr_scheduler=None, start_epoch=None,
     if not is_best:
         checkpoint = torch.load(filepath)
     else:
-        checkpoint = torch.load(filepath.replace(filename, 'model_best.tar'))
+        checkpoint = torch.load(filepath.replace(filename, 'model_best.pt'))
 
     model.load_state_dict(checkpoint['state_dict'])
 

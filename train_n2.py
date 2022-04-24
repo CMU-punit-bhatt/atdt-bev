@@ -23,7 +23,7 @@ def main(cfg: DictConfig):
     params = cfg.training
     ckpt_filename = "checkpoint.pt"
     log_dir = os.path.join(cfg.logging.log_dir, f'{cfg.model_name}/{cfg.exp}/')
-    ckpt_dir = os.path.join(cfg.logging.log_dir, f'/{cfg.model_name}/{cfg.exp}')
+    ckpt_dir = os.path.join(cfg.logging.ckpt_dir, f'{cfg.model_name}/{cfg.exp}')
     writer = SummaryWriter(log_dir)
 
     # use GPU if available
@@ -62,8 +62,8 @@ def main(cfg: DictConfig):
                                                        max_lr=params.lr,
                                                        steps_per_epoch=\
                                                             len(train_loader),
-                                                        epochs=params.n_epochs,
-                                                        div_factor=20)
+                                                       epochs=params.n_epochs,
+                                                       div_factor=20)
 
     # fetch loss function and metrics
     loss_fn = get_loss_fn(params)
@@ -77,7 +77,6 @@ def main(cfg: DictConfig):
     train_and_evaluate(model,
                        train_loader,
                        val_loader,
-
                        opt,
                        loss_fn,
                        metrics,

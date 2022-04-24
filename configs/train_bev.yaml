@@ -18,7 +18,7 @@ data:
 
 training:
     # Need to modify the class count.
-    n_classes: 35
+    n_classes: 22
     lr: 0.0001
     batch_train: 32
     batch_val: 32
