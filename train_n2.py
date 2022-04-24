@@ -77,6 +77,7 @@ def main(cfg: DictConfig):
     train_and_evaluate(model,
                        train_loader,
                        val_loader,
+
                        opt,
                        loss_fn,
                        metrics,
@@ -86,6 +87,7 @@ def main(cfg: DictConfig):
                        ckpt_filename,
                        log_dir,
                        writer,
+                       load_checkpoint=False,
                        device=device)
 
 if __name__ == '__main__':

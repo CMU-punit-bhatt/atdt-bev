@@ -5,6 +5,7 @@ from torch.utils.data import Dataset
 import matplotlib.pyplot as plt
 from PIL import Image
 from torchvision import transforms as T
+import cv2
 
 
 class AtdtDataset(Dataset):
@@ -16,8 +17,8 @@ class AtdtDataset(Dataset):
                  transforms=None,
                  mean=[0.485, 0.456, 0.406],
                  std=[0.229, 0.224, 0.225],
-                 img_ext='jpg',
-                 gt_ext='jpg',
+                 img_ext='png',
+                 gt_ext='png',
                  img_size=(512, 512)):
 
         super(AtdtDataset, self).__init__()
@@ -79,19 +80,16 @@ class AtdtDataset(Dataset):
                                '.'.join([self.file_names[idx], self.gt_ext]))
 
         image = Image.open(img_path).convert('RGB')
-        gt = Image.open(gt_path)
+        gt = cv2.imread(gt_path).astype(np.uint8)
 
         transformed = self.transforms(image=np.array(image), gt=np.array(gt))
         image = transformed['image']
         gt = transformed['gt']
-        
+
         image = self.base_transforms(image)
 
         # TODO: Just taking first channel. Is that enough?
-        gt = torch.from_numpy(np.array(gt)).long()[..., 0]
-
-        # print(gt.max())
-
+        gt = torch.from_numpy(np.array(gt)).long()[..., 2]
         return image, gt
 
     def __len__(self):

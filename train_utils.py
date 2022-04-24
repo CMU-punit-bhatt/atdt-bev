@@ -80,6 +80,7 @@ def train_and_evaluate(model,
                        ckpt_filename,
                        log_dir,
                        writer,
+                       load_checkpoint=True,
                        device=None):
 
     ckpt_file_path = os.path.join(ckpt_dir, ckpt_filename)
@@ -90,7 +91,7 @@ def train_and_evaluate(model,
     batch_sample_train, batch_gt_train = next(iter(train_dataloader))
     batch_sample_val, batch_gt_val = next(iter(val_dataloader))
 
-    if os.path.exists(ckpt_file_path):
+    if load_checkpoint and os.path.exists(ckpt_file_path):
         model, opt, lr_scheduler, start_epoch, best_value = \
             utils.load_checkpoint(model,
                                   opt,
