@@ -131,3 +131,9 @@ dmypy.json
 
 .vscode/
 */.vscode/
+
+# dataset folder
+data/
+wandb/
+outputs/
+logs/

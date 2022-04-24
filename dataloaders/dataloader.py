@@ -48,6 +48,55 @@ def get_clean_files_list(img_dir, gt_dir):
 
     return comb_files
 
+def get_front_dataloaders(cfg):
+    
+    torch.manual_seed(cfg.seed)
+
+    files = get_clean_files_list(cfg.data.rgb_dir,
+                                 cfg.data.seg_dir)
+
+    rand_perm = torch.randperm(len(files))
+    train_split = int(cfg.training.train_split * len(files))
+    val_split = int(cfg.training.val_split * len(files))
+
+    train_files = [files[i] for i in rand_perm[:train_split]]
+    val_files = [files[i] for i in rand_perm[train_split: train_split + val_split]]
+
+    # Do NOT include ToTensor and Normalize. These are done explicitly
+    # on images.
+    train_transforms = Compose([RandomCrop(cfg.training.crop_h,
+                                           cfg.training.crop_w),
+                                HorizontalFlip(p=0.5)],
+                                additional_targets={'gt': 'mask'})
+
+    val_transforms = Compose([Resize(cfg.training.crop_h,
+                                     cfg.training.crop_w)],
+                              additional_targets={'gt': 'mask'})
+
+    train_dataset = AtdtDataset(train_files,
+                                image_dir=cfg.data.rgb_dir,
+                                gt_dir=cfg.data.seg_dir,
+                                transforms=train_transforms,
+                                img_size=(cfg.training.crop_h,
+                                          cfg.training.crop_w))
+    val_dataset = AtdtDataset(val_files,
+                              image_dir=cfg.data.rgb_dir,
+                              gt_dir=cfg.data.seg_dir,
+                              transforms=val_transforms,
+                              img_size=(cfg.training.crop_h,
+                                        cfg.training.crop_w))
+
+    train_loader = DataLoader(train_dataset,
+                              batch_size=cfg.training.batch_train,
+                              shuffle=True,
+                              num_workers=cfg.training.n_workers)
+    val_loader = DataLoader(val_dataset,
+                            batch_size=cfg.training.batch_val,
+                            shuffle=False,
+                            num_workers=cfg.training.n_workers)
+
+    return train_loader, val_loader
+
 def get_bev_dataloaders(cfg):
 
     torch.manual_seed(cfg.seed)
