@@ -74,13 +74,13 @@ def get_bev_dataloaders(cfg):
                               additional_targets={'gt': 'mask'})
 
     train_dataset = AtdtDataset(train_files,
-                                image_dir=cfg.data.bev_rgb_dir,
+                                image_dir=cfg.data.front_rgb_dir,
                                 gt_dir=cfg.data.bev_seg_dir,
                                 transforms=train_transforms,
                                 img_size=(cfg.training.crop_h,
                                           cfg.training.crop_w))
     val_dataset = AtdtDataset(val_files,
-                              image_dir=cfg.data.bev_rgb_dir,
+                              image_dir=cfg.data.front_rgb_dir,
                               gt_dir=cfg.data.bev_seg_dir,
                               transforms=val_transforms,
                               img_size=(cfg.training.crop_h,
