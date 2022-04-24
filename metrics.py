@@ -407,9 +407,9 @@ class Threshold():
 
 def get_metrics(metrics_name, params):
     if metrics_name=='iou':
-        return IoU(num_classes=params.num_classes+1, ignore_index=params.ignore_index)
+        return IoU(num_classes=params.n_classes+1, ignore_index=params.ignore_index)
     if metrics_name=='accuracy':
-        return Accuracy(num_classes=params.num_classes+1, ignore_index=params.ignore_index)
+        return Accuracy(num_classes=params.n_classes+1, ignore_index=params.ignore_index)
     if metrics_name=='mse':
         return MSE()        
     if metrics_name=='rmse':

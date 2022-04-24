@@ -8,7 +8,7 @@ import torch
 import utils
 from models import get_network
 from tqdm import tqdm
-import dataloader.dataloader as dataloader
+import dataloaders.dataloader as dataloader
 from losses import get_loss_fn
 from metrics import get_metrics
 from omegaconf import DictConfig
@@ -55,7 +55,6 @@ def main(cfg: DictConfig):
     """
     params = cfg.training
     ckpt_filename = "checkpoint.pt"
-    log_dir = cfg.logging.log_dir.rtrim('/') + f'/{cfg.model_name}/{cfg.exp}'
     ckpt_dir = cfg.logging.ckpt_dir.rtrim('/') + f'/{cfg.model_name}/{cfg.exp}'
 
     # use GPU if available
@@ -75,8 +74,7 @@ def main(cfg: DictConfig):
         torch.cuda.manual_seed(seed)
 
     # fetch dataloaders
-    val_dl = dataloader.fetch_dataloader(
-        args.data_dir, args.txt_val, 'val', params)
+    _, val_loader = dataloader.get_bev_dataloaders(cfg)
 
     # Define the model
     model = get_network(params).to(device)
@@ -95,8 +93,10 @@ def main(cfg: DictConfig):
                                   filename=ckpt_filename)[0]
 
     # Evaluate
-    eval_loss, val_metrics = evaluate(
-        model, loss_fn, val_dl, metrics=metrics, params=params)
+    eval_loss, val_metrics = evaluate(model,
+                                      loss_fn,
+                                      val_loader,
+                                      metrics=metrics)
 
     best_json_path = os.path.join(cfg.logging.log_dir,
                                   f'{cfg.model_name}/{cfg.exp}/evaluation.json')
