@@ -52,7 +52,7 @@ def get_bev_dataloaders(cfg):
 
     torch.manual_seed(cfg.seed)
 
-    files = get_clean_files_list(cfg.data.bev_rgb_dir,
+    files = get_clean_files_list(cfg.data.front_rgb_dir,
                                  cfg.data.bev_seg_dir)
 
     rand_perm = torch.randperm(len(files))
