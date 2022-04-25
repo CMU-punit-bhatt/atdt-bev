@@ -64,10 +64,44 @@ def unit_test1():
     visualise(model, batch_image, save_path)
   
 
-@hydra.main(config_path='./configs', config_name='train_front')
+# @hydra.main(config_path='./configs', config_name='train_front')
+# def main(cfg: DictConfig):
+#     params = cfg.training
+#     ckpt_filename = "/home/adithyas/atdt/n1_model_best.pt"
+#     model = get_network(params).to(torch.device("cuda"))
+#     best_value = -float('inf')
+#     model, _, _, _, best_value = utils.load_checkpoint(model,
+#                                   None,
+#                                   None,
+#                                   0,
+#                                   False,
+#                                   best_value,
+#                                   ".",
+#                                   ckpt_filename)
+#     model.eval()
+#     file_list = ["000050", "000052", "000053", "000088", "002180", "002110"]
+#     img_format = "/home/adithyas/atdt/{}_rgb.png"
+#     save_format = "/home/adithyas/atdt/{}_result.png"
+#     img_paths = [img_format.format(file) for file in file_list]
+#     save_paths = [save_format.format(file) for file in file_list]
+#     input = None
+    
+#     for img_path, save_path in zip(img_paths, save_paths):
+#         img = cv2.imread(img_path)
+#         img = Image.fromarray(img).convert('RGB')
+#         toTensor = torchvision.transforms.Compose([torchvision.transforms.Resize((512, 512)), torchvision.transforms.ToTensor()]) 
+#         img = toTensor(img)
+#         if input is None:
+#             input = img.unsqueeze(0).cuda()
+#         else:
+#             input = torch.cat([input, img.unsqueeze(0).cuda()], dim=0)
+        
+#     visualise(model, input, save_paths)
+
+@hydra.main(config_path='./configs', config_name='train_bev')
 def main(cfg: DictConfig):
     params = cfg.training
-    ckpt_filename = "/home/adithyas/atdt/n1_model_best.pt"
+    ckpt_filename = "/home/adithyas/atdt/n2_model_best.pt"
     model = get_network(params).to(torch.device("cuda"))
     best_value = -float('inf')
     model, _, _, _, best_value = utils.load_checkpoint(model,
@@ -79,14 +113,24 @@ def main(cfg: DictConfig):
                                   ".",
                                   ckpt_filename)
     model.eval()
-    img_path = "/home/adithyas/atdt/002180_rgb.png"
-    img = cv2.imread(img_path)
-    img = Image.fromarray(img).convert('RGB')
-    toTensor = torchvision.transforms.ToTensor()
-    img = toTensor(img)
-    input = img.unsqueeze(0).cuda()
-    save_path = ["/home/adithyas/atdt/002180_result.png"]
-    visualise(model, input, save_path)
+    file_list = ["000050", "000052", "000053", "000088", "002180", "002110"]
+    img_format = "/home/adithyas/atdt/{}_rgb.png"
+    save_format = "/home/adithyas/atdt/{}_bev.png"
+    img_paths = [img_format.format(file) for file in file_list]
+    save_paths = [save_format.format(file) for file in file_list]
+    input = None
+    
+    for img_path, save_path in zip(img_paths, save_paths):
+        img = cv2.imread(img_path)
+        img = Image.fromarray(img).convert('RGB')
+        toTensor = torchvision.transforms.Compose([torchvision.transforms.Resize((512, 512)), torchvision.transforms.ToTensor()]) 
+        img = toTensor(img)
+        if input is None:
+            input = img.unsqueeze(0).cuda()
+        else:
+            input = torch.cat([input, img.unsqueeze(0).cuda()], dim=0)
+        
+    visualise(model, input, save_paths)
 
 if __name__ == '__main__':
     main()
