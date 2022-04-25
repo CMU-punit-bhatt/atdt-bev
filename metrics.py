@@ -241,26 +241,14 @@ class MSE():
         if torch.is_tensor(target):
             target = target.cpu().numpy()
 
-        predicted = predicted.squeeze(axis=1)
-        predicted = predicted*self.max_depth
-        predicted[predicted<self.min_depth] = self.min_depth
-        predicted[predicted>self.max_depth] = self.max_depth
-        mask = (target > self.min_depth) & (target < self.max_depth)
+        assert predicted.shape == target.shape
 
-        #set elements that we do not want to count to 1 so that error is 0
-        predicted[~mask] = 1
-        target[~mask] = 1
+        B = predicted.shape[0]
 
-        if self.relative:
-            norms = np.sum(((predicted - target)**2)/target, axis=(1,2))/np.maximum(np.sum(mask, axis=(1,2), dtype=np.float32), self.eps)
-        else:
-            norms = np.sum((predicted - target)**2, axis=(1,2))/np.maximum(np.sum(mask, axis=(1,2), dtype=np.float32), self.eps)
-        
-        self.errors += np.sum(norms)
-        #take invalid targets. a target is invalid if all the elements of its mask all set to 0. 
-        num_invalids = np.sum(np.all(mask==0, axis=(1,2)))
-        #invalid mask should not be counted when computing mean
-        self._num_examples += predicted.shape[0]-num_invalids
+        error = np.linalg.norm(predicted.reshape(B, -1) - target.reshape(B, -1),
+                               axis=-1)
+        self.errors += np.sum(error)
+        self._num_examples += predicted.shape[0]
 
     def value(self):
       error = self.errors / self._num_examples
