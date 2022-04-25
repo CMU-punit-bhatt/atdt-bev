@@ -26,7 +26,6 @@ def visualise(model, input, save_path, channels_dim=1):
 
     output = model(input.cuda())
     output = output["out"]
-    
     # assuming output shape of B x N x H x W
     segmented_image = np.zeros((output.shape[0], output.shape[-2], output.shape[-1], 3))  
 
@@ -79,7 +78,13 @@ def main_n1(cfg: DictConfig):
                                   ".",
                                   ckpt_filename)
     model.eval()
-    file_list = ["000050", "000052", "000053", "000088", "002180", "002110"]
+    
+    # nuscenes mini
+    # file_list = ["000050", "000052", "000053", "000088"]
+    
+    # carla mini
+    file_list = ["002110", "002180", "002190", "002200", "002210", "002220", "002230", "002230", "002240", "002250", "002260", "002270"]
+    
     img_format = "/home/adithyas/atdt/results/{}_rgb.png"
     save_format = "/home/adithyas/atdt/results/{}_result.png"
     img_paths = [img_format.format(file) for file in file_list]
@@ -113,7 +118,13 @@ def main_n2(cfg: DictConfig):
                                   ".",
                                   ckpt_filename)
     model.eval()
-    file_list = ["000050", "000052", "000053", "000088", "002180", "002110"]
+    
+    # nuscenes mini
+    # file_list = ["000050", "000052", "000053", "000088"]
+    
+    # carla mini
+    file_list = ["002110", "002180", "002190", "002200", "002210", "002220", "002230", "002230", "002240", "002250", "002260", "002270"]
+    
     img_format = "/home/adithyas/atdt/results/{}_rgb.png"
     save_format = "/home/adithyas/atdt/results/{}_bev.png"
     img_paths = [img_format.format(file) for file in file_list]
@@ -133,7 +144,7 @@ def main_n2(cfg: DictConfig):
     visualise(model, input, save_paths)
 
 if __name__ == '__main__':
-    main_n1()
+    # main_n1()
     main_n2()
 
     
