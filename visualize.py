@@ -91,7 +91,7 @@ def main_n1(cfg: DictConfig):
     save_paths = [save_format.format(file) for file in file_list]
     input = None
     
-    for img_path, save_path in zip(img_paths, save_paths):
+    for img_path in img_paths:
         img = cv2.imread(img_path)
         img = Image.fromarray(img).convert('RGB')
         toTensor = torchvision.transforms.Compose([torchvision.transforms.Resize((512, 512)), torchvision.transforms.ToTensor()]) 
@@ -131,7 +131,7 @@ def main_n2(cfg: DictConfig):
     save_paths = [save_format.format(file) for file in file_list]
     input = None
     
-    for img_path, save_path in zip(img_paths, save_paths):
+    for img_path in img_paths:
         img = cv2.imread(img_path)
         img = Image.fromarray(img).convert('RGB')
         toTensor = torchvision.transforms.Compose([torchvision.transforms.Resize((512, 512)), torchvision.transforms.ToTensor()]) 
@@ -144,7 +144,7 @@ def main_n2(cfg: DictConfig):
     visualise(model, input, save_paths)
 
 if __name__ == '__main__':
-    # main_n1()
+    main_n1()
     main_n2()
 
     
