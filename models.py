@@ -76,8 +76,6 @@ class Transfer(nn.Module):
                                  middleplanes,
                                  middleplanes,
                                  activation,
-                                 stride,
-                                 dilation,
                                  norm_layer))
 
         for i in range(num_blocks - 2):
@@ -85,16 +83,12 @@ class Transfer(nn.Module):
                                      middleplanes,
                                      middleplanes,
                                      activation,
-                                     stride,
-                                     dilation,
                                      norm_layer))
 
         layers.append(BasicBlock(middleplanes,
                                  middleplanes,
                                  outplanes,
                                  activation,
-                                 stride,
-                                 dilation,
                                  norm_layer))
 
         self.transfer = nn.Sequential(*layers)
