@@ -91,6 +91,9 @@ def save_dict_to_json(d, json_path):
 
 def save_checkpoint(state, is_best, ckpt_dir='./', filename='checkpoint.pt'):
     filepath = os.path.join(ckpt_dir, filename)
+
+    print(f'Saving ckpt - {filepath}')
+
     if not os.path.exists(ckpt_dir):
         print("Checkpoint Directory does not exist! Making directory {}".format(ckpt_dir))
         os.makedirs(ckpt_dir)
@@ -108,7 +111,7 @@ def load_checkpoint(model, optimizer=None, lr_scheduler=None, start_epoch=None,
     else:
         checkpoint = torch.load(filepath.replace(filename, 'model_best.pt'))
 
-    model.load_state_dict(checkpoint['state_dict'])
+    model.load_state_dict(checkpoint['state_dict'], strict=False)
 
     if optimizer is not None:
         optimizer.load_state_dict(checkpoint['optim_dict'])
