@@ -138,3 +138,5 @@ wandb/
 outputs/
 logs/
 test/
+results/
+*.pt
