@@ -17,13 +17,25 @@ from collections import OrderedDict
 from omegaconf import DictConfig
 from train_utils import train_and_evaluate
 
-@hydra.main(config_path='./configs', config_name='train_bev')
+import wandb
+
+wandb.init(project="vlr_project", entity="adithyasampath21")
+
+def create_dir(path):
+    if not os.path.isdir(path):
+        os.makedirs(path)
+
+@hydra.main(config_path='./configs', config_name='train_front')
 def main(cfg: DictConfig):
 
     params = cfg.training
-    ckpt_filename = "checkpoint.pt"
+    ckpt_filename = "checkpoint_front.pt"
     log_dir = os.path.join(cfg.logging.log_dir, f'{cfg.model_name}/{cfg.exp}/')
     ckpt_dir = os.path.join(cfg.logging.log_dir, f'{cfg.model_name}/{cfg.exp}')
+    
+    create_dir(log_dir)
+    create_dir(ckpt_dir)
+    
     writer = SummaryWriter(log_dir)
 
     # use GPU if available
@@ -51,24 +63,19 @@ def main(cfg: DictConfig):
     logging.info("Loading the datasets...")
 
     # fetch dataloaders
-    train_loader, val_loader = dataloader.get_bev_dataloaders(cfg)
+    train_loader, val_loader = dataloader.get_front_dataloaders(cfg)
 
     logging.info("- done.")
 
     # Define the model and optimizer
     model = get_network(params).to(device)
     opt = optim.Adam(model.parameters(), lr=params.lr)
-    # lr_scheduler = torch.optim.lr_scheduler.OneCycleLR(opt,
-    #                                                    max_lr=params.lr,
-    #                                                    steps_per_epoch=\
-    #                                                         len(train_loader),
-    #                                                    epochs=params.n_epochs,
-    #                                                    div_factor=20)
-
-    lr_scheduler = torch.optim.lr_scheduler.StepLR(opt,
-                                                   cfg.training.lr_step_epochs * \
+    lr_scheduler = torch.optim.lr_scheduler.OneCycleLR(opt,
+                                                       max_lr=params.lr,
+                                                       steps_per_epoch=\
                                                         len(train_loader),
-                                                   gamma=cfg.training.lr_gamma)
+                                                        epochs=params.n_epochs,
+                                                        div_factor=20)
 
     # fetch loss function and metrics
     loss_fn = get_loss_fn(params)
@@ -91,7 +98,6 @@ def main(cfg: DictConfig):
                        ckpt_filename,
                        log_dir,
                        writer,
-                       load_checkpoint=False,
                        device=device)
 
 if __name__ == '__main__':
