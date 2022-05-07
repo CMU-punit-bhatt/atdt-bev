@@ -11,8 +11,10 @@ logging:
 
 data:
     data_dir: '/home/adithyas/atdt/data'
-    rgb_dir: '/home/adithyas/atdt/data/dataset/rgb'
-    seg_dir: '/home/adithyas/atdt/data/dataset/seg'
+    nuscenes_rgb_dir: '/home/adithyas/atdt/data/nuImages/rgb'
+    nuscenes_seg_dir: '/home/adithyas/atdt/data/nuImages/seg'
+    carla_rgb_dir: '/home/adithyas/atdt/data/carla/rgb'
+    carla_seg_dir: '/home/adithyas/atdt/data/carla/seg'
 
 training:
     # Need to modify the class count.

@@ -6,7 +6,7 @@ from PIL import Image
 import os
 import utils
 from wandb import visualize
-from carla_nuscenes_map import CARLA_CLASSES_NAME_TO_RGB
+from dataloaders.carla_nuscenes_map import CARLA_CLASSES_NAME_TO_RGB
 import dataloaders.dataloader as dataloader
 import cv2
 import hydra
