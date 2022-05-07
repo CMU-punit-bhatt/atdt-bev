@@ -1,16 +1,17 @@
+from collections import OrderedDict
+
 import hydra
 import torch
 from albumentations import Compose, Resize
 from omegaconf import DictConfig
 from PIL import Image
 from tqdm import tqdm
-from collections import OrderedDict
 
-from utils.models import get_adaptive_network, get_network, get_transfer
-from utils.utils import load_checkpoint, RunningAverage
-from utils.metrics import get_metrics
-from utils.losses import get_loss_fn
 from dataloaders.dataloader import get_test_dataloader
+from utils.losses import get_loss_fn
+from utils.metrics import get_metrics
+from utils.models import get_adaptive_network, get_network, get_transfer
+from utils.utils import RunningAverage, load_checkpoint
 
 
 def get_adaptive_net(cfg):
