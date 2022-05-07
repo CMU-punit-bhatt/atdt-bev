@@ -19,6 +19,7 @@ data:
     n1_ckpt_name: 'n1_model_best.pt'
     n2_ckpt_dir: '/content/checkpoints/'
     n2_ckpt_name: 'n2_model_best.pt'
+    need_labels_map: False
 
 training:
     # Need to modify the class count.

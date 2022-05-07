@@ -1,11 +1,12 @@
 import os
-import torch
-import numpy as np
-from torch.utils.data import Dataset
-import matplotlib.pyplot as plt
-from PIL import Image
-from torchvision import transforms as T
+
 import cv2
+import matplotlib.pyplot as plt
+import numpy as np
+import torch
+from PIL import Image
+from torch.utils.data import Dataset
+from torchvision import transforms as T
 
 
 class AtdtDataset(Dataset):
@@ -19,7 +20,8 @@ class AtdtDataset(Dataset):
                  std=[0.229, 0.224, 0.225],
                  img_ext='png',
                  gt_ext='png',
-                 img_size=(512, 512)):
+                 img_size=(512, 512),
+                 labels_map=None):
 
         super(AtdtDataset, self).__init__()
 
@@ -33,6 +35,7 @@ class AtdtDataset(Dataset):
         self.img_ext = img_ext
         self.gt_ext = gt_ext
         self.img_size = img_size
+        self.labels_map = labels_map
 
         self.base_transforms = T.Compose([
                 T.ToTensor(),
@@ -89,7 +92,19 @@ class AtdtDataset(Dataset):
         image = self.base_transforms(image)
 
         # TODO: Just taking first channel. Is that enough?
-        gt = torch.from_numpy(np.array(gt)).long()[..., 2]
+        gt = torch.from_numpy(np.array(gt))[..., 2]
+
+        if self.labels_map is not None:
+
+            assert type(self.labels_map) == dict
+
+            mapped_gt = torch.zeros_like(gt)
+
+            for k, v in self.labels_map.items():
+                mapped_gt[gt == k] = v
+
+            gt = mapped_gt.long()
+
         return image, gt
 
     def __len__(self):

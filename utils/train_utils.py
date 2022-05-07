@@ -1,11 +1,14 @@
 import logging
 import os
+from collections import OrderedDict
 
 import torch
 from tqdm import tqdm
-import utils
-from evaluate import evaluate
-from collections import OrderedDict
+
+import utils.utils as utils
+from utils.evaluate import evaluate
+
+
 def get_lr(opt):
 
     return opt.param_groups[0]['lr']

@@ -1,21 +1,23 @@
 import logging
 import os
+import random
+from collections import OrderedDict
+
 import hydra
 import numpy as np
 import torch
 import torch.optim as optim
-import random
-import utils
-
+from omegaconf import DictConfig
 from torch.utils.tensorboard import SummaryWriter
 from tqdm import tqdm
+
 import dataloaders.dataloader as dataloader
-from losses import get_loss_fn
-from metrics import get_metrics
-from models import get_network
-from collections import OrderedDict
-from omegaconf import DictConfig
-from train_utils import train_and_evaluate
+import utils.utils as utils
+from utils.losses import get_loss_fn
+from utils.metrics import get_metrics
+from utils.models import get_network
+from utils.train_utils import train_and_evaluate
+
 
 @hydra.main(config_path='./configs', config_name='train_bev')
 def main(cfg: DictConfig):
