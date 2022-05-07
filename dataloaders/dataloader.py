@@ -1,15 +1,14 @@
 import os
+
 import torch
+from albumentations import (Compose, HorizontalFlip, Normalize, RandomCrop,
+                            Resize)
 from torch.utils.data import DataLoader
 from torchvision import transforms as T
+
 from dataloaders.atdt_dataset import AtdtDataset
-from albumentations import (
-    HorizontalFlip,
-    Compose,
-    Resize,
-    Normalize,
-    RandomCrop
-)
+from dataloaders.carla_nuscenes_map import NUSCENES_CARLA_MAP
+
 
 def get_clean_files_list(img_dir, gt_dir):
 
@@ -73,18 +72,25 @@ def get_bev_dataloaders(cfg):
                                      cfg.training.crop_w)],
                               additional_targets={'gt': 'mask'})
 
+    labels_map = None
+
+    if cfg.data.need_labels_map:
+        labels_map = NUSCENES_CARLA_MAP
+
     train_dataset = AtdtDataset(train_files,
                                 image_dir=cfg.data.front_rgb_dir,
                                 gt_dir=cfg.data.bev_seg_dir,
                                 transforms=train_transforms,
                                 img_size=(cfg.training.crop_h,
-                                          cfg.training.crop_w))
+                                          cfg.training.crop_w),
+                                labels_map=labels_map)
     val_dataset = AtdtDataset(val_files,
                               image_dir=cfg.data.front_rgb_dir,
                               gt_dir=cfg.data.bev_seg_dir,
                               transforms=val_transforms,
                               img_size=(cfg.training.crop_h,
-                                        cfg.training.crop_w))
+                                        cfg.training.crop_w),
+                              labels_map=labels_map)
 
     train_loader = DataLoader(train_dataset,
                               batch_size=cfg.training.batch_train,
