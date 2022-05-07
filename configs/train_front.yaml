@@ -11,15 +11,18 @@ logging:
 
 data:
     data_dir: '/home/adithyas/atdt/data'
-    nuscenes_rgb_dir: '/home/adithyas/atdt/data/nuImages/rgb'
-    nuscenes_seg_dir: '/home/adithyas/atdt/data/nuImages/seg'
-    carla_rgb_dir: '/home/adithyas/atdt/data/carla/rgb'
-    carla_seg_dir: '/home/adithyas/atdt/data/carla/seg'
+    nuscenes_rgb_dir: '/home/adithyas/atdt/data/nuImages/mini/front/rgb'
+    nuscenes_seg_dir: '/home/adithyas/atdt/data/nuImages/mini/front/seg'
+    carla_rgb_dir: '/home/adithyas/atdt/data/carla/front/rgb'
+    carla_seg_dir: '/home/adithyas/atdt/data/carla/front/seg'
+    need_labels_map: True
 
 training:
     # Need to modify the class count.
     n_classes: 23
-    lr: 0.0001
+    lr: 0.00001
+    lr_step_epochs: 5
+    lr_gamma: 0.7
     batch_train: 32
     batch_val: 32
     # Introduce test later.
@@ -39,5 +42,3 @@ training:
     pretrained: False
     ignore_index: 11
     use_cuda: True
-    lr_step_epochs: 5
-    lr_gamma: 0.7

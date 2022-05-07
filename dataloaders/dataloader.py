@@ -3,7 +3,7 @@ import os
 import torch
 from albumentations import (Compose, HorizontalFlip, Normalize, RandomCrop,
                             Resize)
-from torch.utils.data import DataLoader
+from torch.utils.data import DataLoader, ConcatDataset
 from torchvision import transforms as T
 
 from dataloaders.atdt_dataset import AtdtDataset
@@ -51,15 +51,25 @@ def get_front_dataloaders(cfg):
     
     torch.manual_seed(cfg.seed)
 
-    files = get_clean_files_list(cfg.data.rgb_dir,
-                                 cfg.data.seg_dir)
+    nuscenes_files = get_clean_files_list(cfg.data.nuscenes_rgb_dir,
+                                 cfg.data.nuscenes_seg_dir)
 
-    rand_perm = torch.randperm(len(files))
-    train_split = int(cfg.training.train_split * len(files))
-    val_split = int(cfg.training.val_split * len(files))
+    rand_perm = torch.randperm(len(nuscenes_files))
+    nuscenes_train_split = int(cfg.training.train_split * len(nuscenes_files))
+    nuscenes_val_split = int(cfg.training.val_split * len(nuscenes_files))
 
-    train_files = [files[i] for i in rand_perm[:train_split]]
-    val_files = [files[i] for i in rand_perm[train_split: train_split + val_split]]
+    nuscenes_train_files = [nuscenes_files[i] for i in rand_perm[:nuscenes_train_split]]
+    nuscenes_val_files = [nuscenes_files[i] for i in rand_perm[nuscenes_train_split: nuscenes_train_split + nuscenes_val_split]]
+    
+    carla_files = get_clean_files_list(cfg.data.carla_rgb_dir,
+                                 cfg.data.carla_seg_dir)
+
+    rand_perm = torch.randperm(len(carla_files))
+    carla_train_split = int(cfg.training.train_split * len(carla_files))
+    carla_val_split = int(cfg.training.val_split * len(carla_files))
+
+    carla_train_files = [carla_files[i] for i in rand_perm[:carla_train_split]]
+    carla_val_files = [carla_files[i] for i in rand_perm[carla_train_split: carla_train_split + carla_val_split]]
 
     # Do NOT include ToTensor and Normalize. These are done explicitly
     # on images.
@@ -72,24 +82,56 @@ def get_front_dataloaders(cfg):
                                      cfg.training.crop_w)],
                               additional_targets={'gt': 'mask'})
 
-    train_dataset = AtdtDataset(train_files,
-                                image_dir=cfg.data.rgb_dir,
-                                gt_dir=cfg.data.seg_dir,
+    nuscenes_labels_map = None
+    carla_labels_map = None
+
+    if cfg.data.need_labels_map:
+        nuscenes_labels_map = NUSCENES_CARLA_MAP
+
+    
+    print(len(nuscenes_train_files), len(nuscenes_val_files))
+    print(len(carla_train_files), len(carla_val_files))
+    
+    nuscenes_train_dataset = AtdtDataset(nuscenes_train_files,
+                                image_dir=cfg.data.nuscenes_rgb_dir,
+                                gt_dir=cfg.data.nuscenes_seg_dir,
                                 transforms=train_transforms,
                                 img_size=(cfg.training.crop_h,
-                                          cfg.training.crop_w))
-    val_dataset = AtdtDataset(val_files,
-                              image_dir=cfg.data.rgb_dir,
-                              gt_dir=cfg.data.seg_dir,
-                              transforms=val_transforms,
-                              img_size=(cfg.training.crop_h,
-                                        cfg.training.crop_w))
+                                          cfg.training.crop_w),
+                                labels_map=nuscenes_labels_map)
+    
+    nuscenes_val_dataset = AtdtDataset(nuscenes_val_files,
+                                image_dir=cfg.data.nuscenes_rgb_dir,
+                                gt_dir=cfg.data.nuscenes_seg_dir,
+                                transforms=val_transforms,
+                                img_size=(cfg.training.crop_h,
+                                        cfg.training.crop_w),
+                                labels_map=nuscenes_labels_map)
+    
+    carla_train_dataset = AtdtDataset(carla_train_files,
+                                image_dir=cfg.data.carla_rgb_dir,
+                                gt_dir=cfg.data.carla_seg_dir,
+                                transforms=train_transforms,
+                                img_size=(cfg.training.crop_h,
+                                          cfg.training.crop_w),
+                                labels_map=carla_labels_map)
+    
+    carla_val_dataset = AtdtDataset(carla_val_files,
+                                image_dir=cfg.data.carla_rgb_dir,
+                                gt_dir=cfg.data.carla_seg_dir,
+                                transforms=val_transforms,
+                                img_size=(cfg.training.crop_h,
+                                        cfg.training.crop_w),
+                                labels_map=carla_labels_map)
+    
+    nuscenes_carla_train_dataset = ConcatDataset([nuscenes_train_dataset, carla_train_dataset])
+    nuscenes_carla_val_dataset = ConcatDataset([nuscenes_val_dataset, carla_val_dataset])
 
-    train_loader = DataLoader(train_dataset,
+    train_loader = DataLoader(nuscenes_carla_train_dataset,
                               batch_size=cfg.training.batch_train,
                               shuffle=True,
                               num_workers=cfg.training.n_workers)
-    val_loader = DataLoader(val_dataset,
+    val_loader = DataLoader(nuscenes_carla_val_dataset,
                             batch_size=cfg.training.batch_val,
                             shuffle=False,
                             num_workers=cfg.training.n_workers)
@@ -97,7 +139,7 @@ def get_front_dataloaders(cfg):
     return train_loader, val_loader
 
 def get_bev_dataloaders(cfg):
-
+    
     torch.manual_seed(cfg.seed)
 
     files = get_clean_files_list(cfg.data.front_rgb_dir,
