@@ -89,9 +89,6 @@ def get_front_dataloaders(cfg):
         nuscenes_labels_map = NUSCENES_CARLA_MAP
 
     
-    print(len(nuscenes_train_files), len(nuscenes_val_files))
-    print(len(carla_train_files), len(carla_val_files))
-    
     nuscenes_train_dataset = AtdtDataset(nuscenes_train_files,
                                 image_dir=cfg.data.nuscenes_rgb_dir,
                                 gt_dir=cfg.data.nuscenes_seg_dir,
