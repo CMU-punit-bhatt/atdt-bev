@@ -190,3 +190,36 @@ def get_bev_dataloaders(cfg):
                             num_workers=cfg.training.n_workers)
 
     return train_loader, val_loader
+
+def get_test_dataloader(cfg):
+
+    torch.manual_seed(cfg.seed)
+
+    files = get_clean_files_list(cfg.data.test_front_rgb_dir,
+                                 cfg.data.test_bev_seg_dir)
+
+    # Do NOT include ToTensor and Normalize. These are done explicitly
+    # on images.
+    transforms = Compose([Resize(cfg.training.crop_h,
+                                 cfg.training.crop_w)],
+                          additional_targets={'gt': 'mask'})
+
+    labels_map = None
+
+    if cfg.data.need_labels_map:
+        labels_map = NUSCENES_CARLA_MAP
+
+    test_dataset = AtdtDataset(files,
+                                image_dir=cfg.data.test_front_rgb_dir,
+                                gt_dir=cfg.data.test_bev_seg_dir,
+                                transforms=transforms,
+                                img_size=(cfg.training.crop_h,
+                                          cfg.training.crop_w),
+                                labels_map=labels_map)
+
+    test_loader = DataLoader(test_dataset,
+                             batch_size=cfg.training.batch_test,
+                             shuffle=True,
+                             num_workers=cfg.training.n_workers)
+
+    return test_loader

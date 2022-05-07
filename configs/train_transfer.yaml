@@ -43,6 +43,6 @@ training:
     loss_fn: 'l2'
     metrics: ['mse']
     arch: 'deeplab_resnet50'
-    pretrained: False
+    pretrained: True
     ignore_index: 11
     use_cuda: True

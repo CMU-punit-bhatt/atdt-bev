@@ -1,5 +1,5 @@
 
-CARLA_CLASSES_NAME_TO_I = {
+CARLA_CLASSES_I_TO_NAME = {
     0: 'Unlabeled',
     1: 'Building',
     2: 'Fence',
