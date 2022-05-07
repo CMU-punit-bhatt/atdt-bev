@@ -2,8 +2,9 @@ import json
 import logging
 import os
 import shutil
+
 import torch
-import numpy as np
+
 
 class Params():
     """Class that loads hyperparameters from a json file.

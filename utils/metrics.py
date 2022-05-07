@@ -1,9 +1,5 @@
 import numpy as np
 import torch
-import math
-import torch.nn as nn
-import torch.nn.functional as F
-
 
 class ConfusionMatrix():
     """Constructs a confusion matrix for a multi-class classification problems.
@@ -229,11 +225,11 @@ class MSE():
         self.min_depth = min_depth
         self.relative = relative
         self.eps = 1e-6
-    
+
     def reset(self):
         self.errors = 0
-        self._num_examples = 0        
-    
+        self._num_examples = 0
+
     def add(self, predicted, target, **kwargs):
         # If target and/or predicted are tensors, convert them to numpy arrays
         if torch.is_tensor(predicted):
@@ -278,13 +274,13 @@ class MAE(MSE):
             norms = np.sum(np.abs(predicted - target), axis=(1,2))/np.maximum(np.sum(mask, axis=(1,2)), self.eps)
         self.errors += np.sum(norms)
 
-        #take invalid targets. a target is invalid if all the elements of its mask all set to 0. 
+        #take invalid targets. a target is invalid if all the elements of its mask all set to 0.
         num_invalids = np.sum(np.all(mask==0, axis=(1,2)))
         #invalid mask should not be counted when computing mean
         self._num_examples += predicted.shape[0]-num_invalids
 
 class RMSE(MSE):
-       
+
     def add(self, predicted, target):
         # If target and/or predicted are tensors, convert them to numpy arrays
         if torch.is_tensor(predicted):
@@ -306,7 +302,7 @@ class RMSE(MSE):
         norms = np.sqrt(norms)
         self.errors += np.sum(norms)
 
-        #take invalid targets. a target is invalid if all the elements of its mask all set to 0. 
+        #take invalid targets. a target is invalid if all the elements of its mask all set to 0.
         num_invalids = np.sum(np.all(mask==0, axis=(1,2)))
         #invalid mask should not be counted when computing mean
         self._num_examples += predicted.shape[0]-num_invalids
@@ -319,13 +315,13 @@ class RMSE(MSE):
 class RMSELog(MSE):
 
     def add(self, predicted, target):
-        
+
         # If target and/or predicted are tensors, convert them to numpy arrays
         if torch.is_tensor(predicted):
             predicted = predicted.cpu().numpy()
         if torch.is_tensor(target):
             target = target.cpu().numpy()
-        
+
         predicted = predicted.squeeze(axis=1)
         predicted = predicted*self.max_depth
         predicted[predicted<self.min_depth] = self.min_depth
@@ -340,7 +336,7 @@ class RMSELog(MSE):
         norms = np.sqrt(norms)
         self.errors += np.sum(norms)
 
-        #take invalid targets. a target is invalid if all the elements of its mask all set to 0. 
+        #take invalid targets. a target is invalid if all the elements of its mask all set to 0.
         num_invalids = np.sum(np.all(mask==0, axis=(1,2)))
         #invalid mask should not be counted when computing mean
         self._num_examples += predicted.shape[0]-num_invalids
@@ -355,11 +351,11 @@ class Threshold():
         self.min_depth = min_depth
         self.threshold = threshold
         self.eps = 1e-6
-    
+
     def reset(self):
         self.errors = 0
-        self._num_examples = 0        
-    
+        self._num_examples = 0
+
     def add(self, predicted, target):
         # If target and/or predicted are tensors, convert them to numpy arrays
         if torch.is_tensor(predicted):
@@ -371,7 +367,7 @@ class Threshold():
         predicted = predicted*self.max_depth
         predicted[predicted<self.min_depth] = self.min_depth
         predicted[predicted>self.max_depth] = self.max_depth
-        
+
         mask = (target > self.min_depth) & (target < self.max_depth)
         ratios = np.maximum((predicted/np.maximum(target, self.eps)), (target/np.maximum(predicted, self.eps)))
         ratios = np.where(mask, ratios, 0)
@@ -380,7 +376,7 @@ class Threshold():
 
         #the maximum between a ratio and its iverse its always positive, hence if this is not the case the corresponding target is ivalid
         self._num_examples += np.count_nonzero(ratios_per_image)
-        
+
         # test = []
         # for i in range(len(predicted)):
         #     mask = (target[i] > self.min_depth) & (target[i] < self.max_depth)
@@ -399,7 +395,7 @@ def get_metrics(metrics_name, params):
     if metrics_name=='accuracy':
         return Accuracy(num_classes=params.n_classes+1, ignore_index=params.ignore_index)
     if metrics_name=='mse':
-        return MSE()        
+        return MSE()
     if metrics_name=='rmse':
         return RMSE()
     if metrics_name=='rmse_log':
@@ -415,4 +411,4 @@ def get_metrics(metrics_name, params):
     if metrics_name=='delta2':
         return Threshold(threshold=1.25**2)
     if metrics_name=='delta1':
-        return Threshold(threshold=1.25**3)                    
+        return Threshold(threshold=1.25**3)

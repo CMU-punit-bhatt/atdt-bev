@@ -1,7 +1,5 @@
-import numpy as np
 import torch
 import torch.nn as nn
-import torch.nn.functional as F
 
 class Masked_L1_loss(nn.Module):
     def __init__(self, threshold=100):

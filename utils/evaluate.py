@@ -1,17 +1,20 @@
 """Evaluates the model"""
 
-import hydra
 import os
 import random
+
+import dataloaders.dataloader as dataloader
+import hydra
 import numpy as np
 import torch
-import utils
-from models import get_network
-from tqdm import tqdm
-import dataloaders.dataloader as dataloader
-from losses import get_loss_fn
-from metrics import get_metrics
 from omegaconf import DictConfig
+from tqdm import tqdm
+
+import utils.utils as utils
+from utils.losses import get_loss_fn
+from utils.metrics import get_metrics
+from utils.models import get_network
+
 
 def evaluate(model, loss_fn, dataset_dl, metrics=None, device=None):
 
