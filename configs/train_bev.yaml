@@ -15,7 +15,6 @@ data:
     bev_seg_dir: '/content/data/test/bev/seg'
     front_rgb_dir: '/content/data/test/front/rgb'
     front_seg_dir: '/content/data/test/front/seg'
-    need_labels_map: False
 
 training:
     # Need to modify the class count.

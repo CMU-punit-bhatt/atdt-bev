@@ -53,7 +53,7 @@ def main(cfg: DictConfig):
     logging.info("Loading the datasets...")
 
     # fetch dataloaders
-    train_loader, val_loader = dataloader.get_bev_dataloaders(cfg)
+    train_loader, val_loader = dataloader.get_n2_dataloaders(cfg)
 
     logging.info("- done.")
 
