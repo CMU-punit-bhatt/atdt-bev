@@ -77,7 +77,7 @@ def main(cfg: DictConfig):
         torch.cuda.manual_seed(seed)
 
     # fetch dataloaders
-    _, val_loader = dataloader.get_bev_dataloaders(cfg)
+    _, val_loader = dataloader.get_n2_dataloaders(cfg)
 
     # Define the model
     model = get_network(params).to(device)
