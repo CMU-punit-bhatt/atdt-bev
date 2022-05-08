@@ -144,3 +144,8 @@ full_data.zip
 nuscenes_front.zip
 nuscenes/
 test/
+town01.zip
+copy_files.py
+test_front.zip
+content/
+train_front_resize.zip

@@ -36,7 +36,7 @@ def evaluate(model, loss_fn, dataset_dl, metrics=None, device=None):
             output = model(xb)['out']
 
             if loss_fn is not None:
-                loss_b = loss_fn(output, yb)
+                loss_b = loss_fn(output.cuda(), yb.cuda())
                 running_loss.update(loss_b.item())
             if metrics is not None:
                 for metric_name, metric in metrics.items():
