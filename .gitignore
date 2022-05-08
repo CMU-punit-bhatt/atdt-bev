@@ -140,3 +140,7 @@ logs/
 test/
 results/
 *.pt
+full_data.zip
+nuscenes_front.zip
+nuscenes/
+test/

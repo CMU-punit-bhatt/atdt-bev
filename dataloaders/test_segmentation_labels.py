@@ -22,7 +22,7 @@ class Dataset(Dataset):
 
     def __getitem__(self, idx):
         image_path = os.path.join(self._image_dir, self._images[idx])
-        image = cv2.imread(image_path, 0)
+        image = cv2.imread(image_path)
         return image
 
 
@@ -53,8 +53,8 @@ def test(img_path):
 
 
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser(description='Load VQA.')
-    parser.add_argument('--img_path', type=str, default='/content/train/front/seg')
+    parser = argparse.ArgumentParser(description='Load labels.')
+    parser.add_argument('--img_path', type=str)
     args = parser.parse_args()
     classes = test(args.img_path)
     print(classes)

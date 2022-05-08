@@ -1,5 +1,5 @@
 import os
-
+import cv2
 import torch
 from albumentations import (Compose, HorizontalFlip, Normalize, RandomCrop,
                             Resize)
@@ -79,7 +79,8 @@ def get_front_dataloaders(cfg):
                                 additional_targets={'gt': 'mask'})
 
     val_transforms = Compose([Resize(cfg.training.crop_h,
-                                     cfg.training.crop_w)],
+                                     cfg.training.crop_w, 
+                                     cv2.INTER_NEAREST)],
                               additional_targets={'gt': 'mask'})
 
     nuscenes_labels_map = None
@@ -157,7 +158,8 @@ def get_bev_dataloaders(cfg):
                                 additional_targets={'gt': 'mask'})
 
     val_transforms = Compose([Resize(cfg.training.crop_h,
-                                     cfg.training.crop_w)],
+                                     cfg.training.crop_w,
+                                     cv2.INTER_NEAREST)],
                               additional_targets={'gt': 'mask'})
 
     labels_map = None

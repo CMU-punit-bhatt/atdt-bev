@@ -64,9 +64,8 @@ def unit_test1():
   
 
 @hydra.main(config_path='./configs', config_name='train_front')
-def main_n1(cfg: DictConfig):
+def main_n1(cfg: DictConfig, ckpt_filename, img_paths, save_paths):
     params = cfg.training
-    ckpt_filename = "/home/adithyas/atdt/n1_model_best.pt"
     model = get_network(params).to(torch.device("cuda"))
     best_value = -float('inf')
     model, _, _, _, best_value = utils.load_checkpoint(model,
@@ -78,17 +77,7 @@ def main_n1(cfg: DictConfig):
                                   ".",
                                   ckpt_filename)
     model.eval()
-    
-    # nuscenes mini
-    # file_list = ["000050", "000052", "000053", "000088"]
-    
-    # carla mini
-    file_list = ["002110", "002180", "002190", "002200", "002210", "002220", "002230", "002230", "002240", "002250", "002260", "002270"]
-    
-    img_format = "/home/adithyas/atdt/results/{}_rgb.png"
-    save_format = "/home/adithyas/atdt/results/{}_result.png"
-    img_paths = [img_format.format(file) for file in file_list]
-    save_paths = [save_format.format(file) for file in file_list]
+        
     input = None
     
     for img_path in img_paths:
@@ -104,9 +93,8 @@ def main_n1(cfg: DictConfig):
     visualise(model, input, save_paths)
 
 @hydra.main(config_path='./configs', config_name='train_bev')
-def main_n2(cfg: DictConfig):
+def main_n2(cfg: DictConfig, ckpt_filename, img_paths, save_paths):
     params = cfg.training
-    ckpt_filename = "/home/adithyas/atdt/n2_model_best.pt"
     model = get_network(params).to(torch.device("cuda"))
     best_value = -float('inf')
     model, _, _, _, best_value = utils.load_checkpoint(model,
@@ -119,16 +107,6 @@ def main_n2(cfg: DictConfig):
                                   ckpt_filename)
     model.eval()
     
-    # nuscenes mini
-    # file_list = ["000050", "000052", "000053", "000088"]
-    
-    # carla mini
-    file_list = ["002110", "002180", "002190", "002200", "002210", "002220", "002230", "002230", "002240", "002250", "002260", "002270"]
-    
-    img_format = "/home/adithyas/atdt/results/{}_rgb.png"
-    save_format = "/home/adithyas/atdt/results/{}_bev.png"
-    img_paths = [img_format.format(file) for file in file_list]
-    save_paths = [save_format.format(file) for file in file_list]
     input = None
     
     for img_path in img_paths:
@@ -144,6 +122,7 @@ def main_n2(cfg: DictConfig):
     visualise(model, input, save_paths)
 
 if __name__ == '__main__':
+    # TODO: add argeparse
     main_n1()
     main_n2()
 
