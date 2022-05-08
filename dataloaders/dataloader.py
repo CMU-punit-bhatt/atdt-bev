@@ -1,5 +1,7 @@
+from configparser import Interpolation
 import os
 
+import cv2
 import torch
 from albumentations import (Compose, HorizontalFlip, Normalize, RandomCrop,
                             Resize)
@@ -69,7 +71,8 @@ def get_bev_dataloaders(cfg):
                                 additional_targets={'gt': 'mask'})
 
     val_transforms = Compose([Resize(cfg.training.crop_h,
-                                     cfg.training.crop_w)],
+                                     cfg.training.crop_w, 
+                                     interpolation=cv2.INTER_NEAREST)],
                               additional_targets={'gt': 'mask'})
 
     labels_map = None
@@ -83,14 +86,16 @@ def get_bev_dataloaders(cfg):
                                 transforms=train_transforms,
                                 img_size=(cfg.training.crop_h,
                                           cfg.training.crop_w),
-                                labels_map=labels_map)
+                                labels_map=labels_map,
+                                is_bev=True)
     val_dataset = AtdtDataset(val_files,
                               image_dir=cfg.data.front_rgb_dir,
                               gt_dir=cfg.data.bev_seg_dir,
                               transforms=val_transforms,
                               img_size=(cfg.training.crop_h,
                                         cfg.training.crop_w),
-                              labels_map=labels_map)
+                              labels_map=labels_map,
+                              is_bev=True)
 
     train_loader = DataLoader(train_dataset,
                               batch_size=cfg.training.batch_train,
@@ -113,7 +118,8 @@ def get_test_dataloader(cfg):
     # Do NOT include ToTensor and Normalize. These are done explicitly
     # on images.
     transforms = Compose([Resize(cfg.training.crop_h,
-                                 cfg.training.crop_w)],
+                                 cfg.training.crop_w,
+                                 Interpolation=cv2.INTER_NEAREST)],
                           additional_targets={'gt': 'mask'})
 
     labels_map = None
