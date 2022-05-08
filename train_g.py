@@ -4,16 +4,20 @@ import random
 from collections import OrderedDict
 from ctypes import util
 
+import cv2
 import hydra
 import numpy as np
 import torch
 import torch.optim as optim
+from albumentations import Compose, HorizontalFlip, Normalize, Resize
+from albumentations.pytorch import ToTensorV2
 from omegaconf import DictConfig
 from torch.utils.tensorboard import SummaryWriter
 from tqdm import tqdm
 
 import dataloaders.dataloader as dataloader
 import utils.utils
+from utils import ipm
 from utils.losses import get_loss_fn
 from utils.metrics import get_metrics
 from utils.models import get_network, get_transfer
@@ -23,7 +27,15 @@ def get_lr(opt):
 
     return opt.param_groups[0]['lr']
 
-def evaluate(N1, N2, G, loss_fn, dataset_dl, metrics=None, device=None):
+def evaluate(N1,
+             N2,
+             G,
+             loss_fn,
+             dataset_dl,
+             metrics=None,
+             device=None,
+             n1_transforms=None,
+             n2_transforms=None):
 
     # set model to evaluation mode
     G.eval()
@@ -42,8 +54,8 @@ def evaluate(N1, N2, G, loss_fn, dataset_dl, metrics=None, device=None):
             xb = xb.to(device)
             # yb = yb.to(device)
 
-            encoding1 = N1(xb)['out']
-            encoding2 = N2(xb)['out']
+            encoding1 = N1(n1_transforms(xb))['out']
+            encoding2 = N2(n2_transforms(xb))['out']
 
             output = G(encoding1)
             loss_b = loss_fn(output, encoding2)
@@ -72,8 +84,9 @@ def train_epoch(N1,
                 opt=None,
                 lr_scheduler=None,
                 metrics=None,
-                params=None,
-                device=None):
+                device=None,
+                n1_transforms=None,
+                n2_transforms=None):
 
     running_loss = utils.RunningAverage()
 
@@ -85,8 +98,8 @@ def train_epoch(N1,
         xb = xb.to(device)
         # yb = yb.to(device)
 
-        encoding1 = N1(xb)['out']
-        encoding2 = N2(xb)['out']
+        encoding1 = N1(n1_transforms(xb))['out']
+        encoding2 = N2(n2_transforms(xb))['out']
 
         output = G(encoding1)
         loss_b = loss_fn(output, encoding2)
@@ -135,7 +148,11 @@ def train_and_evaluate(N1,
                        log_dir,
                        writer,
                        load_checkpoint=True,
-                       device=None):
+                       device=None,
+                       n1_train_transforms=None,
+                       n1_val_transforms=None,
+                       n2_train_transforms=None,
+                       n2_val_transforms=None):
 
     ckpt_file_path = os.path.join(ckpt_dir, ckpt_filename)
     best_value = -float('inf')
@@ -178,7 +195,9 @@ def train_and_evaluate(N1,
                                                 lr_scheduler,
                                                 metrics,
                                                 params,
-                                                device=device)
+                                                device=device,
+                                                n1_transforms=n1_train_transforms,
+                                                n2_transforms=n2_train_transforms)
 
         # Evaluate for one epoch on validation set
         val_loss, val_metrics = evaluate(N1,
@@ -187,7 +206,9 @@ def train_and_evaluate(N1,
                                          loss_fn,
                                          val_dataloader,
                                          metrics=metrics,
-                                         device=device)
+                                         device=device,
+                                         n1_transforms=n1_val_transforms,
+                                         n2_transforms=n2_val_transforms)
 
         writer.add_scalars('Loss', {
             'Training': train_loss,
@@ -275,9 +296,42 @@ def main(cfg: DictConfig):
     logging.info("Loading the datasets...")
 
     # fetch dataloaders
-    train_loader, val_loader = dataloader.get_bev_dataloaders(cfg)
+    train_loader, val_loader = dataloader.get_g_dataloaders(cfg)
 
     logging.info("- done.")
+
+    # Adding transforms - Include ToTensor and normalize.
+    n1_train_transforms = Compose([Resize(cfg.training.crop_h,
+                                          cfg.training.crop_w,
+                                          interpolation=cv2.INTER_NEAREST),
+                                   HorizontalFlip(p=0.5),
+                                   Normalize(),
+                                   ToTensorV2()],
+                                   additional_targets={'gt': 'mask'})
+
+    n1_val_transforms = Compose([Resize(cfg.training.crop_h,
+                                        cfg.training.crop_w,
+                                        interpolation=cv2.INTER_NEAREST),
+                                 Normalize(),
+                                 ToTensorV2()],
+                                 additional_targets={'gt': 'mask'})
+
+    n2_train_transforms = Compose([ipm.create_lambda_transform(),
+                                   Resize(cfg.training.crop_h,
+                                          cfg.training.crop_w,
+                                          interpolation=cv2.INTER_NEAREST),
+                                   HorizontalFlip(p=0.5),
+                                   Normalize(),
+                                   ToTensorV2()],
+                                   additional_targets={'gt': 'mask'})
+
+    n2_val_transforms = Compose([ipm.create_lambda_transform(),
+                                 Resize(cfg.training.crop_h,
+                                        cfg.training.crop_w,
+                                        interpolation=cv2.INTER_NEAREST),
+                                 Normalize(),
+                                 ToTensorV2()],
+                                 additional_targets={'gt': 'mask'})
 
     # Define the model and optimizer
     N1 = get_network(params).to(device)
@@ -330,7 +384,11 @@ def main(cfg: DictConfig):
                        log_dir,
                        writer,
                        load_checkpoint=False,
-                       device=device)
+                       device=device,
+                       n1_train_transforms=n1_train_transforms,
+                       n1_val_transforms=n1_val_transforms,
+                       n2_train_transforms=n2_train_transforms,
+                       n2_val_transforms=n2_val_transforms)
 
 if __name__ == '__main__':
     main()

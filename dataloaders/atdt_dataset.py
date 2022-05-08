@@ -21,7 +21,8 @@ class AtdtDataset(Dataset):
                  img_ext='png',
                  gt_ext='png',
                  img_size=(512, 512),
-                 labels_map=None):
+                 labels_map=None,
+                 use_base_transforms=True):
 
         super(AtdtDataset, self).__init__()
 
@@ -37,18 +38,21 @@ class AtdtDataset(Dataset):
         self.img_size = img_size
         self.labels_map = labels_map
 
-        self.base_transforms = T.Compose([
-                T.ToTensor(),
-                T.Normalize(mean=self.mean, std=self.std),
-            ])
+        self.base_transforms = None
+
+        if use_base_transforms:
+            self.base_transforms = T.Compose([
+                    T.ToTensor(),
+                    T.Normalize(mean=self.mean, std=self.std),
+                ])
 
         self.transforms = transforms
 
-        if transforms is None:
+        # if transforms is None:
 
-            self.transforms = T.Compose([
-                T.Resize(self.img_size),
-            ])
+        #     self.transforms = T.Compose([
+        #         T.Resize(self.img_size),
+        #     ])
 
         self.file_names = file_names
 
@@ -84,11 +88,13 @@ class AtdtDataset(Dataset):
         image = np.asarray(Image.open(img_path).convert('RGB'))
         gt = cv2.imread(gt_path).astype(np.uint8)
 
-        transformed = self.transforms(image=image, gt=np.array(gt))
-        image = transformed['image']
-        gt = transformed['gt']
+        if self.transforms is not None:
+            transformed = self.transforms(image=image, gt=np.array(gt))
+            image = transformed['image']
+            gt = transformed['gt']
 
-        image = self.base_transforms(image)
+        if self.base_transforms is not None:
+            image = self.base_transforms(image)
 
         # Carla stores labels in channel 2
         gt = torch.from_numpy(np.array(gt))[..., 2]
