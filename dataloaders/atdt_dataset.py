@@ -103,9 +103,9 @@ class AtdtDataset(Dataset):
             for k, v in self.labels_map.items():
                 mapped_gt[gt == k] = v
 
-            gt = mapped_gt.long()
+            gt = mapped_gt
 
-        return image, gt
+        return image, gt.long()
 
     def __len__(self):
         return len(self.file_names)
