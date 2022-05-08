@@ -1,5 +1,7 @@
+from configparser import Interpolation
 import os
 
+import cv2
 import torch
 from albumentations import (Compose, HorizontalFlip, Normalize, RandomCrop,
                             Resize)
@@ -8,6 +10,7 @@ from torchvision import transforms as T
 
 from dataloaders.atdt_dataset import AtdtDataset
 from dataloaders.carla_nuscenes_map import NUSCENES_CARLA_MAP
+from utils import ipm
 
 
 def get_clean_files_list(img_dir, gt_dir):
@@ -63,13 +66,17 @@ def get_bev_dataloaders(cfg):
 
     # Do NOT include ToTensor and Normalize. These are done explicitly
     # on images.
-    train_transforms = Compose([RandomCrop(cfg.training.crop_h,
-                                           cfg.training.crop_w),
+    train_transforms = Compose([ipm.create_lambda_transform(),
+                                Resize(cfg.training.crop_h,
+                                       cfg.training.crop_w,
+                                       interpolation=cv2.INTER_NEAREST),
                                 HorizontalFlip(p=0.5)],
                                 additional_targets={'gt': 'mask'})
 
-    val_transforms = Compose([Resize(cfg.training.crop_h,
-                                     cfg.training.crop_w)],
+    val_transforms = Compose([ipm.create_lambda_transform(),
+                              Resize(cfg.training.crop_h,
+                                     cfg.training.crop_w, 
+                                     interpolation=cv2.INTER_NEAREST)],
                               additional_targets={'gt': 'mask'})
 
     labels_map = None
@@ -113,7 +120,8 @@ def get_test_dataloader(cfg):
     # Do NOT include ToTensor and Normalize. These are done explicitly
     # on images.
     transforms = Compose([Resize(cfg.training.crop_h,
-                                 cfg.training.crop_w)],
+                                 cfg.training.crop_w,
+                                 Interpolation=cv2.INTER_NEAREST)],
                           additional_targets={'gt': 'mask'})
 
     labels_map = None

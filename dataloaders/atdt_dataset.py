@@ -76,22 +76,21 @@ class AtdtDataset(Dataset):
         return mask_copy
 
     def __getitem__(self, idx):
-
         img_path = os.path.join(self.img_dir,
                                 '.'.join([self.file_names[idx], self.img_ext]))
         gt_path = os.path.join(self.gt_dir,
                                '.'.join([self.file_names[idx], self.gt_ext]))
 
-        image = Image.open(img_path).convert('RGB')
+        image = np.asarray(Image.open(img_path).convert('RGB'))
         gt = cv2.imread(gt_path).astype(np.uint8)
 
-        transformed = self.transforms(image=np.array(image), gt=np.array(gt))
+        transformed = self.transforms(image=image, gt=np.array(gt))
         image = transformed['image']
         gt = transformed['gt']
 
         image = self.base_transforms(image)
 
-        # TODO: Just taking first channel. Is that enough?
+        # Carla stores labels in channel 2
         gt = torch.from_numpy(np.array(gt))[..., 2]
 
         if self.labels_map is not None:

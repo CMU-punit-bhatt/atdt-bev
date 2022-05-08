@@ -60,13 +60,6 @@ def main(cfg: DictConfig):
     # Define the model and optimizer
     model = get_network(params).to(device)
     opt = optim.Adam(model.parameters(), lr=params.lr)
-    # lr_scheduler = torch.optim.lr_scheduler.OneCycleLR(opt,
-    #                                                    max_lr=params.lr,
-    #                                                    steps_per_epoch=\
-    #                                                         len(train_loader),
-    #                                                    epochs=params.n_epochs,
-    #                                                    div_factor=20)
-
     lr_scheduler = torch.optim.lr_scheduler.StepLR(opt,
                                                    cfg.training.lr_step_epochs * \
                                                         len(train_loader),
@@ -93,7 +86,7 @@ def main(cfg: DictConfig):
                        ckpt_filename,
                        log_dir,
                        writer,
-                       load_checkpoint=False,
+                       load_checkpoint=True,
                        device=device)
 
 if __name__ == '__main__':
