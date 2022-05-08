@@ -10,6 +10,7 @@ from torchvision import transforms as T
 
 from dataloaders.atdt_dataset import AtdtDataset
 from dataloaders.carla_nuscenes_map import NUSCENES_CARLA_MAP
+from utils import ipm
 
 
 def get_clean_files_list(img_dir, gt_dir):
@@ -65,12 +66,15 @@ def get_bev_dataloaders(cfg):
 
     # Do NOT include ToTensor and Normalize. These are done explicitly
     # on images.
-    train_transforms = Compose([RandomCrop(cfg.training.crop_h,
-                                           cfg.training.crop_w),
+    train_transforms = Compose([ipm.create_lambda_transform(),
+                                Resize(cfg.training.crop_h,
+                                       cfg.training.crop_w,
+                                       interpolation=cv2.INTER_NEAREST),
                                 HorizontalFlip(p=0.5)],
                                 additional_targets={'gt': 'mask'})
 
-    val_transforms = Compose([Resize(cfg.training.crop_h,
+    val_transforms = Compose([ipm.create_lambda_transform(),
+                              Resize(cfg.training.crop_h,
                                      cfg.training.crop_w, 
                                      interpolation=cv2.INTER_NEAREST)],
                               additional_targets={'gt': 'mask'})
@@ -86,16 +90,14 @@ def get_bev_dataloaders(cfg):
                                 transforms=train_transforms,
                                 img_size=(cfg.training.crop_h,
                                           cfg.training.crop_w),
-                                labels_map=labels_map,
-                                is_bev=True)
+                                labels_map=labels_map)
     val_dataset = AtdtDataset(val_files,
                               image_dir=cfg.data.front_rgb_dir,
                               gt_dir=cfg.data.bev_seg_dir,
                               transforms=val_transforms,
                               img_size=(cfg.training.crop_h,
                                         cfg.training.crop_w),
-                              labels_map=labels_map,
-                              is_bev=True)
+                              labels_map=labels_map)
 
     train_loader = DataLoader(train_dataset,
                               batch_size=cfg.training.batch_train,
