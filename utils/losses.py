@@ -22,9 +22,7 @@ class Masked_L1_loss(nn.Module):
 def get_loss_fn(params):
 
     weights = torch.ones(params.n_classes)
-    weights[[0, 3]] = 0.0075
-    weights[[7]] = 0.5
-    weights[[4, 10]] = 2
+    weights[[0, 3]] = 0.1
     
     focal_loss = torch.hub.load(
         'adeelh/pytorch-multi-class-focal-loss',

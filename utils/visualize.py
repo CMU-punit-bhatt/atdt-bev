@@ -6,7 +6,6 @@ from PIL import Image
 import os
 import utils
 from utils.utils import load_checkpoint
-from wandb import visualize
 from dataloaders.carla_nuscenes_map import CARLA_CLASSES_NAME_TO_RGB, NUSCENES_CARLA_MAP
 import dataloaders.dataloader as dataloader
 import cv2
@@ -18,15 +17,18 @@ from omegaconf import OmegaConf
 from utils.models import get_network
 import argparse
 from tqdm import tqdm
+import unittest
 
 # reference: https://datascience.stackexchange.com/questions/40637/how-to-visualize-image-segmentation-results
 
 def visualise(model, input, save_path, channels_dim=1):
     '''
+    Helper function to visualize model results on input data
+    
     args:
-    model: model for inference
-    input: input image to run inference
-    save_path: list of save paths to each of the output image
+    model: model to run inference on
+    input: input image(s) to run inference
+    save_path: list of save path(s) to each of the output image
     '''
 
     output = model(input.cuda())
@@ -50,6 +52,8 @@ def visualise(model, input, save_path, channels_dim=1):
         
 def visualise_gt(img_paths, save_paths):
     '''
+    Visualize ground truth labels
+    
     args:
     model: model for inference
     input: input image to run inference
@@ -78,35 +82,12 @@ def visualise_gt(img_paths, save_paths):
         out_img.save(path)
 
 
-
-def unit_test1():
-    batch_image = None
-    save_path = []
-    model = lambda x: x
-    
-    save_folder = "test"
-    if not os.path.isdir(save_folder):
-        os.makedirs(save_folder)
-    
-    for i in range(23):
-        img = torch.ones(1, 1, 224, 224) * i
-        if batch_image is None:
-            batch_image = img
-        else:
-            batch_image = torch.cat([batch_image, img], dim=0)
-        path = os.path.join(save_folder, f"image_{i}.png")
-        save_path.append(path)
-        
-    visualise(model, batch_image, save_path)
-  
-
-@hydra.main(config_path='./configs', config_name='train_front')
-def main_n1(cfg: DictConfig):
-    
-    # TODO: figure out passing args for hydra functions
-    ckpt_filename = "/home/adithyas/atdt/logs/front_syn/0/checkpoint_front.pt"
-    img_paths = ["/home/adithyas/atdt/content/train_full/front/rgb/000127.png", "/home/adithyas/atdt/content/train_full/front/rgb/000560.png"]
-    save_paths = ["/home/adithyas/atdt/results/000127.png", "/home/adithyas/atdt/results/000560.png"]
+def visualise_results(args):
+    '''
+    Visualize outputs from a given model
+    '''
+    initialize(config_path=args.config_path, job_name="visualize_n1")
+    cfg = compose(config_name=args.config_name)
     
     params = cfg.training
     model = get_network(params).to(torch.device("cuda"))
@@ -118,12 +99,12 @@ def main_n1(cfg: DictConfig):
                                   False,
                                   best_value,
                                   ".",
-                                  ckpt_filename)
+                                  args.ckpt_filename)
     model.eval()
         
     input = None
     
-    for img_path in tqdm(img_paths):
+    for img_path in tqdm(args.img_paths):
         img = cv2.imread(img_path)
         img = Image.fromarray(img).convert('RGB')
         toTensor = torchvision.transforms.Compose([torchvision.transforms.Resize((512, 512)), torchvision.transforms.ToTensor()]) 
@@ -133,46 +114,47 @@ def main_n1(cfg: DictConfig):
         else:
             input = torch.cat([input, img.unsqueeze(0).cuda()], dim=0)
         
-    visualise(model, input, save_paths)
+    visualise(model, input, args.save_paths)
 
-@hydra.main(config_path='./configs', config_name='train_bev')
-def main_n2(cfg: DictConfig, ckpt_filename, img_paths, save_paths):
-    params = cfg.training
-    model = get_network(params).to(torch.device("cuda"))
-    best_value = -float('inf')
-    model, _, _, _, best_value = load_checkpoint(model,
-                                  None,
-                                  None,
-                                  0,
-                                  False,
-                                  best_value,
-                                  ".",
-                                  ckpt_filename)
-    model.eval()
-    
-    input = None
-    
-    for img_path in tqdm(img_paths):
-        img = cv2.imread(img_path)
-        img = Image.fromarray(img).convert('RGB')
-        toTensor = torchvision.transforms.Compose([torchvision.transforms.Resize((512, 512)), torchvision.transforms.ToTensor()]) 
-        img = toTensor(img)
-        if input is None:
-            input = img.unsqueeze(0).cuda()
-        else:
-            input = torch.cat([input, img.unsqueeze(0).cuda()], dim=0)
+
+class VizTest(unittest.TestCase):
+    def unit_test1(self):
+        '''
+        Unit test to test the visualization function
+        '''
+        batch_image = None
+        save_path = []
+        model = lambda x: x
         
-    visualise(model, input, save_paths)
+        save_folder = "test"
+        if not os.path.isdir(save_folder):
+            os.makedirs(save_folder)
+        
+        for i in range(23):
+            img = torch.ones(1, 1, 224, 224) * i
+            if batch_image is None:
+                batch_image = img
+            else:
+                batch_image = torch.cat([batch_image, img], dim=0)
+            path = os.path.join(save_folder, f"image_{i}.png")
+            save_path.append(path)
+            
+        visualise(model, batch_image, save_path)
+
 
 if __name__ == '__main__':
-    # TODO: add argeparse
     parser = argparse.ArgumentParser(description='Load labels.')
-    parser.add_argument('--ckpt_filename', type=str, default="/home/adithyas/atdt/logs/front_syn/0/checkpoint_front.pt")
-    parser.add_argument('--img_paths', type=str, default=["/home/adithyas/atdt/content/train_full/front/seg/000127.png", "/home/adithyas/atdt/content/train_full/front/seg/000560.png"])
-    parser.add_argument('--save_paths', type=str, default=["/home/adithyas/atdt/results/000127.png", "/home/adithyas/atdt/results/000560.png"])
+    parser.add_argument('--config_path', type=str, default='./configs')
+    parser.add_argument('--config_name', type=str, default='train_front')
+    parser.add_argument('--ckpt_filename', type=str, default="checkpoint_front.pt")
+    parser.add_argument('--img_paths', type=str, default=["000127_rgb.png", "000560_rgb.png"])
+    parser.add_argument('--save_paths', type=str, default=["000127_seg.png", "000560_seg.png"])
     args = parser.parse_args()
-    # main_n1()
-    # main_n2()
+
+    # visualize results
+    visualise_results(args)
+    
+    # visualize GT
     visualise_gt(args.img_paths, args.save_paths)
 
     

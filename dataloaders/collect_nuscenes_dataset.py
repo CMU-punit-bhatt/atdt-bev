@@ -12,12 +12,12 @@ from carla_nuscenes_map import NUSCENES_CARLA_MAP
 
 
 def create_dir(folder):
-      if not os.path.isdir(folder):
+    if not os.path.isdir(folder):
         os.makedirs(folder)
 
 
 class NuimagesDataset:
-    def __init__(self, save_folder="/content/train", type="front", dataroot='data/sets/nuimages', version="v1.0-train", sensor="CAM_FRONT", num_images_to_save=7500):
+    def __init__(self, save_folder="/content/train", type="front", dataroot='data/sets/nuimages', version="v1.0-train", sensor="CAM_FRONT", resize="resize", num_images_to_save=7500):
         self.save_folder = save_folder
         self.type = type
         self.dataroot = dataroot
@@ -30,6 +30,7 @@ class NuimagesDataset:
         self.rgb = os.path.join(self.save_folder, self.type, "rgb")
         self.seg_nuscenes = os.path.join(self.save_folder, self.type, "seg_nuscenes")
         self.seg_carla = os.path.join(self.save_folder, self.type, "seg")
+        self.resize = resize
         create_dir(self.rgb)
         create_dir(self.seg_nuscenes)
         create_dir(self.seg_carla)
@@ -76,12 +77,18 @@ class NuimagesDataset:
             
             # save center crop RGB images
             img = cv2.imread(img_path)
-            img = img[img.shape[0] // 2 - w // 2 : img.shape[0] // 2 + w // 2, img.shape[1] // 2 - w // 2 : img.shape[1] // 2 + w // 2]
+            if self.resize == "resize":
+                img = cv2.resize(img, (512, 512), interpolation = cv2.INTER_NEAREST)
+            elif self.resize == "center_crop":
+                img = img[img.shape[0] // 2 - w // 2 : img.shape[0] // 2 + w // 2, img.shape[1] // 2 - w // 2 : img.shape[1] // 2 + w // 2]
             cv2.imwrite(os.path.join(self.rgb, filename), img)
 
             # save segmentation labels in Nuscenes format
             semantic_mask, _ = self.nuim.get_segmentation(key_camera_token)
-            semantic_mask = semantic_mask[semantic_mask.shape[0] // 2 - w // 2 : semantic_mask.shape[0] // 2 + w // 2, semantic_mask.shape[1] // 2 - w // 2 : semantic_mask.shape[1] // 2 + w // 2]
+            if self.resize == "resize":
+                semantic_mask = cv2.resize(semantic_mask, (512, 512), interpolation = cv2.INTER_NEAREST)
+            elif self.resize == "center_crop":
+                semantic_mask = semantic_mask[semantic_mask.shape[0] // 2 - w // 2 : semantic_mask.shape[0] // 2 + w // 2, semantic_mask.shape[1] // 2 - w // 2 : semantic_mask.shape[1] // 2 + w // 2]
             cv2.imwrite(os.path.join(self.seg_nuscenes, filename), semantic_mask)
             
             # clean up to avoid memory leaks
@@ -108,13 +115,14 @@ if __name__ == "__main__":
     parser.add_argument('--save_folder', type=str, default="/content/train")
     parser.add_argument('--type', type=str, default='front')
     parser.add_argument('--sensor', type=str, default='CAM_FRONT')
+    parser.add_argument('--resize', type=str, choices=['resize', 'center_crop'], default='resize')
     parser.add_argument('--num_images_to_save', type=int, default=7500)
     args = parser.parse_args()
 
     version = f"v1.0-{args.data}"
     create_dir(args.save_folder)
     
-    nuscenes = NuimagesDataset(save_folder=args.save_folder, type=args.type, dataroot=args.dataroot, version=version, sensor=args.sensor, num_images_to_save=args.num_images_to_save)
+    nuscenes = NuimagesDataset(save_folder=args.save_folder, type=args.type, dataroot=args.dataroot, version=version, sensor=args.sensor, resize=args.resize, num_images_to_save=args.num_images_to_save)
 
     nuscenes.crate_dataset()
     print(f"{args.data} dataset collection done")
