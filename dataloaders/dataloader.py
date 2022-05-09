@@ -164,13 +164,6 @@ def get_test_dataloader(cfg):
     files = get_clean_files_list(cfg.data.test_front_rgb_dir,
                                  cfg.data.test_bev_seg_dir)
 
-    # Do NOT include ToTensor and Normalize. These are done explicitly
-    # on images.
-    transforms = Compose([Resize(cfg.training.crop_h,
-                                 cfg.training.crop_w,
-                                 Interpolation=cv2.INTER_NEAREST)],
-                          additional_targets={'gt': 'mask'})
-
     labels_map = None
 
     if cfg.data.need_labels_map:
@@ -179,14 +172,15 @@ def get_test_dataloader(cfg):
     test_dataset = AtdtDataset(files,
                                 image_dir=cfg.data.test_front_rgb_dir,
                                 gt_dir=cfg.data.test_bev_seg_dir,
-                                transforms=transforms,
+                                transforms=None,
                                 img_size=(cfg.training.crop_h,
                                           cfg.training.crop_w),
-                                labels_map=labels_map)
+                                labels_map=labels_map,
+                                use_base_transforms=False)
 
     test_loader = DataLoader(test_dataset,
                              batch_size=cfg.training.batch_test,
-                             shuffle=True,
+                             shuffle=False,
                              num_workers=cfg.training.n_workers)
 
     return test_loader
