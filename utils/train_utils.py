@@ -42,7 +42,7 @@ def train_epoch(model,
         yb = yb.to(device)
 
         output = model(xb)['out']
-        loss_b = loss_fn(output, yb)
+        loss_b = loss_fn(output.cuda(), yb.cuda())
 
         if opt is not None:
             opt.zero_grad()

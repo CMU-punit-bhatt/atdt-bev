@@ -51,6 +51,7 @@ CARLA_CLASSES_NAME_TO_RGB = {
     22: (145, 170, 100)
 }
 
+
 NUSCENES_CLASSES_NAME_TO_I = {
     'None': 0,
     'animal': 1,

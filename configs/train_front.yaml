@@ -1,0 +1,44 @@
+
+config: train_front_synthetic
+exp: 0
+model_name: 'front_syn'
+seed: 42
+
+logging:
+    log_dir: '/home/adithyas/atdt/logs/'
+    log_interval: 5
+    ckpt_dir: '/home/adithyas/atdt/checkpoints/'
+
+data:
+    data_dir: '/home/adithyas/atdt/data'
+    nuscenes_rgb_dir: '/home/adithyas/atdt/content/train_crop/front/rgb'
+    nuscenes_seg_dir: '/home/adithyas/atdt/content/train_crop/front/seg'
+    carla_rgb_dir: '/home/adithyas/atdt/data/carla/front/rgb'
+    carla_seg_dir: '/home/adithyas/atdt/data/carla/front/seg'
+    need_labels_map: True
+
+training:
+    # Need to modify the class count.
+    n_classes: 23
+    lr: 0.0001
+    lr_step_epochs: 5
+    lr_gamma: 0.99
+    batch_train: 32
+    batch_val: 32
+    # Introduce test later.
+    train_split: 0.8
+    val_split: 0.2
+    # Originally - 512, 512
+    crop_h: 256
+    crop_w: 256
+    n_epochs: 70
+    n_workers: 2
+    start_epoch: 0
+    mean: [0.485, 0.456, 0.406]
+    std: [0.229, 0.224, 0.225]
+    loss_fn: 'crossentropy'
+    metrics: ['iou', 'accuracy']
+    arch: 'deeplab_resnet50'
+    pretrained: True
+    ignore_index: 11
+    use_cuda: True

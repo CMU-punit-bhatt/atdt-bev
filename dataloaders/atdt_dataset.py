@@ -92,10 +92,10 @@ class AtdtDataset(Dataset):
         image = self.base_transforms(image)
 
         # TODO: Just taking first channel. Is that enough?
-        gt = torch.from_numpy(np.array(gt))[..., 2]
-
+        # gt = torch.from_numpy(np.array(gt))[..., 2]
+        gt = torch.from_numpy(np.array(gt))
+        
         if self.labels_map is not None:
-
             assert type(self.labels_map) == dict
 
             mapped_gt = torch.zeros_like(gt)
