@@ -103,13 +103,9 @@ class AtdtDataset(Dataset):
             for k, v in self.labels_map.items():
                 mapped_gt[gt == k] = v
 
-            gt = mapped_gt.long()
-            
-            assert torch.all(gt[:, :, 0]==gt[:, :, 1])
-            assert torch.all(gt[:, :, 0]==gt[:, :, 2])
-            assert torch.all(gt[:, :, 2]==gt[:, :, 1])
+            gt = mapped_gt
 
-        return image, gt[:, :, 2].long()
+        return image, gt.long()
 
     def __len__(self):
         return len(self.file_names)
