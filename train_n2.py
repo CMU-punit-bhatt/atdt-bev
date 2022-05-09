@@ -25,7 +25,7 @@ def main(cfg: DictConfig):
     params = cfg.training
     ckpt_filename = "checkpoint.pt"
     log_dir = os.path.join(cfg.logging.log_dir, f'{cfg.model_name}/{cfg.exp}/')
-    ckpt_dir = os.path.join(cfg.logging.log_dir, f'{cfg.model_name}/{cfg.exp}')
+    ckpt_dir = os.path.join(cfg.logging.ckpt_dir, f'{cfg.model_name}/{cfg.exp}')
     writer = SummaryWriter(log_dir)
 
     # use GPU if available

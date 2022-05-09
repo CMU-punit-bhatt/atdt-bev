@@ -28,7 +28,7 @@ def main(cfg: DictConfig):
     params = cfg.training
     ckpt_filename = "checkpoint_front.pt"
     log_dir = os.path.join(cfg.logging.log_dir, f'{cfg.model_name}/{cfg.exp}/')
-    ckpt_dir = os.path.join(cfg.logging.log_dir, f'{cfg.model_name}/{cfg.exp}')
+    ckpt_dir = os.path.join(cfg.logging.ckpt_dir, f'{cfg.model_name}/{cfg.exp}')
     
     create_dir(log_dir)
     create_dir(ckpt_dir)
