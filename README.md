@@ -2,7 +2,7 @@
 
 ## Team 10 - **Vanshaj Chowdhary (vanshajc), Punit Bhatt (punitb), Adithya Sampath (adithyas)**
 
-### Webpage: [https://16824-team10.notion.site/689d6c2bdad341939b6461f55d7887d2](https://www.notion.so/Domain-Adaptation-with-Multi-Task-Features-for-Bird-s-Eye-View-Segmentation-689d6c2bdad341939b6461f55d7887d2)
+### Webpage: [https://16824-team10.notion.site/689d6c2bdad341939b6461f55d7887d2](https://16824-team10.notion.site/689d6c2bdad341939b6461f55d7887d2)
 
 # Motivation
 
