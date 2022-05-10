@@ -112,7 +112,7 @@ NUSCENES_I_TO_CLASS_NAME = {
 
 NUSCENES_CARLA_MAP = {
     0: 0,
-    1: 20,
+    1: 3,
     2: 4,
     3: 4,
     4: 4,
