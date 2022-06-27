@@ -274,8 +274,9 @@ def main(cfg: DictConfig):
     # Create the input data pipeline
     logging.info("Loading the datasets...")
 
-    # fetch dataloaders
-    train_loader, val_loader = dataloader.get_bev_dataloaders(cfg)
+    # fetch dataloaders. No need to worry about label maps as it doesnt use the
+    # classifier parts.
+    train_loader, val_loader = dataloader.get_n2_dataloaders(cfg)
 
     logging.info("- done.")
 

@@ -7,7 +7,8 @@ from torch.utils.data import DataLoader
 from torchvision import transforms as T
 
 from dataloaders.atdt_dataset import AtdtDataset
-from dataloaders.carla_nuscenes_map import NUSCENES_CARLA_MAP
+from dataloaders.carla_nuscenes_map import (CARLA_COMMON_MAP,
+                                            NUSCENES_COMMON_MAP)
 
 
 def get_clean_files_list(img_dir, gt_dir):
@@ -47,7 +48,7 @@ def get_clean_files_list(img_dir, gt_dir):
 
     return comb_files
 
-def get_bev_dataloaders(cfg):
+def get_n2_dataloaders(cfg):
 
     torch.manual_seed(cfg.seed)
 
@@ -72,25 +73,20 @@ def get_bev_dataloaders(cfg):
                                      cfg.training.crop_w)],
                               additional_targets={'gt': 'mask'})
 
-    labels_map = None
-
-    if cfg.data.need_labels_map:
-        labels_map = NUSCENES_CARLA_MAP
-
     train_dataset = AtdtDataset(train_files,
                                 image_dir=cfg.data.front_rgb_dir,
                                 gt_dir=cfg.data.bev_seg_dir,
                                 transforms=train_transforms,
                                 img_size=(cfg.training.crop_h,
                                           cfg.training.crop_w),
-                                labels_map=labels_map)
+                                labels_map=CARLA_COMMON_MAP)
     val_dataset = AtdtDataset(val_files,
                               image_dir=cfg.data.front_rgb_dir,
                               gt_dir=cfg.data.bev_seg_dir,
                               transforms=val_transforms,
                               img_size=(cfg.training.crop_h,
                                         cfg.training.crop_w),
-                              labels_map=labels_map)
+                              labels_map=CARLA_COMMON_MAP)
 
     train_loader = DataLoader(train_dataset,
                               batch_size=cfg.training.batch_train,
@@ -116,22 +112,17 @@ def get_test_dataloader(cfg):
                                  cfg.training.crop_w)],
                           additional_targets={'gt': 'mask'})
 
-    labels_map = None
-
-    if cfg.data.need_labels_map:
-        labels_map = NUSCENES_CARLA_MAP
-
     test_dataset = AtdtDataset(files,
-                                image_dir=cfg.data.test_front_rgb_dir,
-                                gt_dir=cfg.data.test_bev_seg_dir,
-                                transforms=transforms,
-                                img_size=(cfg.training.crop_h,
-                                          cfg.training.crop_w),
-                                labels_map=labels_map)
+                               image_dir=cfg.data.test_front_rgb_dir,
+                               gt_dir=cfg.data.test_bev_seg_dir,
+                               transforms=transforms,
+                               img_size=(cfg.training.crop_h,
+                                         cfg.training.crop_w),
+                               labels_map=NUSCENES_COMMON_MAP)
 
     test_loader = DataLoader(test_dataset,
                              batch_size=cfg.training.batch_test,
-                             shuffle=True,
+                             shuffle=False,
                              num_workers=cfg.training.n_workers)
 
     return test_loader
